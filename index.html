@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Trumpf Quartett</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🃏</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;800;900&family=Nunito+Sans:wght@600;700;800&family=Cinzel:wght@400;700&family=Crimson+Text:ital@0;1&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<!-- ===================== START SCREEN ===================== -->
+<div id="screen-start" class="screen active">
+  <header class="start-header">
+    <div class="start-kicker">Spiel gegen den Computer</div>
+    <h1 class="start-title">TRUMPF QUARTETT</h1>
+    <div class="start-rule"></div>
+  </header>
+
+  <p class="start-hint">Wähle dein Quartett:</p>
+
+  <div class="deck-choice">
+    <button class="deck-option deck-tauben" data-deck="tauben">
+      <div class="deck-option-art">
+        <img src="img/birds/bird_a_06.png" alt="Taube">
+      </div>
+      <div class="deck-option-name">Tauben-Quartett</div>
+      <div class="deck-option-sub">64 Karten · Serie A &amp; B</div>
+    </button>
+    <button class="deck-option deck-hp" data-deck="hp">
+      <div class="deck-option-art">
+        <img src="img/hp2/hp_01.jpg" alt="Harry Potter">
+      </div>
+      <div class="deck-option-name">Harry Potter Quartett</div>
+      <div class="deck-option-sub">88 Karten · 6 Kategorien</div>
+    </button>
+  </div>
+
+  <div class="size-choice">
+    <p class="start-hint">Kartenanzahl pro Partie:</p>
+    <div class="size-buttons">
+      <button class="size-btn" data-size="16">16</button>
+      <button class="size-btn active" data-size="32">32</button>
+      <button class="size-btn" data-size="all">Alle</button>
+    </div>
+  </div>
+
+  <div class="mode-buttons">
+    <button id="btn-start" class="btn-primary" disabled>🤖 Gegen den Computer</button>
+    <button id="btn-host" class="btn-secondary" disabled>👥 Freund einladen</button>
+  </div>
+  <p id="mp-unavailable" class="mp-note" hidden>Für das Spiel mit einem Freund brauchst du eine Internetverbindung.</p>
+</div>
+
+<!-- ===================== LOBBY (HOST) ===================== -->
+<div id="screen-lobby" class="screen">
+  <div class="lobby-box">
+    <h2 class="lobby-title">👥 Freund einladen</h2>
+    <p class="lobby-sub">Lass deinen Freund den QR-Code scannen<br>oder schick ihm den Link:</p>
+    <div id="qr-box" class="qr-box"></div>
+    <div class="invite-row">
+      <input id="invite-link" class="invite-link" readonly>
+      <button id="btn-copy" class="btn-ghost">Kopieren</button>
+    </div>
+    <div id="lobby-status" class="lobby-status"><span class="thinking">Warte auf deinen Mitspieler …</span></div>
+    <button id="btn-lobby-cancel" class="btn-ghost">Abbrechen</button>
+  </div>
+</div>
+
+<!-- ===================== JOIN (GUEST) ===================== -->
+<div id="screen-join" class="screen">
+  <div class="lobby-box">
+    <h2 class="lobby-title">🃏 Trumpf Quartett</h2>
+    <div id="join-status" class="lobby-status"><span class="thinking">Verbinde mit deinem Freund …</span></div>
+    <button id="btn-join-cancel" class="btn-ghost">Abbrechen</button>
+  </div>
+</div>
+
+<!-- ===================== GAME SCREEN ===================== -->
+<div id="screen-game" class="screen">
+  <header class="game-header">
+    <button id="btn-quit" class="btn-ghost" title="Zurück zum Menü">✕ Menü</button>
+    <div id="game-title" class="game-title"></div>
+    <div class="counts">
+      <div class="count count-player"><span class="count-label">Du</span><span id="count-player" class="count-num">0</span></div>
+      <div class="count count-pot" id="pot-wrap" hidden><span class="count-label">Topf</span><span id="count-pot" class="count-num">0</span></div>
+      <div class="count count-cpu"><span class="count-label" id="count-opp-label">Computer</span><span id="count-cpu" class="count-num">0</span></div>
+    </div>
+  </header>
+
+  <div id="status-bar" class="status-bar"></div>
+
+  <main class="table">
+    <div class="card-slot slot-player">
+      <div class="slot-title">Deine Karte</div>
+      <div id="card-player" class="card-holder"></div>
+    </div>
+
+    <div class="table-mid">
+      <div id="vs-badge" class="vs-badge">VS</div>
+      <div id="result-banner" class="result-banner" hidden></div>
+      <button id="btn-next" class="btn-primary btn-next" hidden>Weiter ➜</button>
+    </div>
+
+    <div class="card-slot slot-cpu">
+      <div class="slot-title" id="opp-slot-title">Computer</div>
+      <div id="card-cpu" class="card-holder"></div>
+    </div>
+  </main>
+</div>
+
+<!-- ===================== END SCREEN ===================== -->
+<div id="screen-end" class="screen">
+  <div class="end-box">
+    <div id="end-emoji" class="end-emoji">🏆</div>
+    <h2 id="end-title" class="end-title"></h2>
+    <p id="end-sub" class="end-sub"></p>
+    <div class="end-actions">
+      <button id="btn-again" class="btn-primary">Nochmal spielen</button>
+      <button id="btn-menu" class="btn-ghost">Zum Menü</button>
+    </div>
+  </div>
+</div>
+
+<script src="js/vendor/peerjs.min.js"></script>
+<script src="js/vendor/qrcode.js"></script>
+<script src="data/tauben.js"></script>
+<script src="data/hp.js"></script>
+<script src="js/game.js"></script>
+</body>
+</html>

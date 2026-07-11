@@ -1,0 +1,322 @@
+:root {
+  --navy: #0f2657;
+  --navy2: #1e3a6e;
+  --gold: #c8a44a;
+  --parchment: #f5edd8;
+  --ink: #1a1208;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html, body { min-height: 100%; }
+
+body {
+  font-family: 'Nunito Sans', system-ui, sans-serif;
+  background: radial-gradient(1200px 700px at 50% -10%, #2a4e8a 0%, #1e3a6e 45%, #0f2657 100%);
+  color: #fff;
+  min-height: 100vh;
+}
+
+body.theme-hp {
+  background: radial-gradient(1200px 700px at 50% -10%, #4a3a60 0%, #352845 45%, #241a30 100%);
+}
+
+.screen { display: none; min-height: 100vh; }
+.screen.active { display: flex; flex-direction: column; align-items: center; }
+
+/* ============ START SCREEN ============ */
+#screen-start { padding: 48px 20px 60px; gap: 26px; }
+
+.start-header { text-align: center; }
+.start-kicker {
+  font-size: 12px; letter-spacing: 5px; text-transform: uppercase;
+  color: var(--gold); margin-bottom: 10px; font-weight: 800;
+}
+.start-title {
+  font-family: 'Nunito', sans-serif; font-weight: 900;
+  font-size: clamp(30px, 6vw, 52px); letter-spacing: 4px; line-height: 1;
+  text-shadow: 0 4px 18px rgba(0,0,0,0.4);
+}
+.start-rule {
+  width: 220px; height: 2px; margin: 18px auto 0;
+  background: linear-gradient(to right, transparent, var(--gold), transparent);
+}
+
+.start-hint { font-weight: 700; color: rgba(255,255,255,0.85); font-size: 15px; }
+
+.deck-choice { display: flex; gap: 22px; flex-wrap: wrap; justify-content: center; }
+
+.deck-option {
+  width: 240px; border: 3px solid transparent; border-radius: 18px;
+  background: rgba(255,255,255,0.08); cursor: pointer; padding: 18px 16px 16px;
+  display: flex; flex-direction: column; align-items: center; gap: 10px;
+  color: #fff; font-family: inherit;
+  transition: transform .15s ease, border-color .15s ease, background .15s ease, box-shadow .15s ease;
+}
+.deck-option:hover { transform: translateY(-4px); background: rgba(255,255,255,0.14); }
+.deck-option.selected {
+  border-color: var(--gold);
+  background: rgba(255,255,255,0.16);
+  box-shadow: 0 12px 34px rgba(0,0,0,0.35), 0 0 0 4px rgba(200,164,74,0.18);
+}
+.deck-option-art {
+  width: 140px; height: 140px; border-radius: 50%; overflow: hidden;
+  background: rgba(255,255,255,0.85);
+  display: flex; align-items: center; justify-content: center;
+}
+.deck-option-art img { width: 82%; height: 82%; object-fit: contain; }
+.deck-hp .deck-option-art img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 15%; }
+.deck-option-name { font-family: 'Nunito', sans-serif; font-weight: 900; font-size: 17px; }
+.deck-option-sub { font-size: 12px; color: rgba(255,255,255,0.65); font-weight: 700; }
+
+.size-choice { text-align: center; display: flex; flex-direction: column; gap: 10px; }
+.size-buttons { display: flex; gap: 10px; justify-content: center; }
+.size-btn {
+  min-width: 64px; padding: 10px 18px; border-radius: 999px; border: 2px solid rgba(255,255,255,0.35);
+  background: transparent; color: #fff; font-family: 'Nunito', sans-serif; font-weight: 800;
+  font-size: 15px; cursor: pointer; transition: all .12s ease;
+}
+.size-btn:hover { border-color: #fff; }
+.size-btn.active { background: var(--gold); border-color: var(--gold); color: var(--navy); }
+
+.btn-primary {
+  font-family: 'Nunito', sans-serif; font-weight: 900; font-size: 17px; letter-spacing: 1px;
+  padding: 14px 44px; border-radius: 999px; border: none; cursor: pointer;
+  background: linear-gradient(120deg, #e0bd66, var(--gold)); color: var(--navy);
+  box-shadow: 0 8px 26px rgba(0,0,0,0.35);
+  transition: transform .12s ease, opacity .12s ease;
+}
+.btn-primary:hover:not(:disabled) { transform: translateY(-2px); }
+.btn-primary:disabled { opacity: 0.4; cursor: not-allowed; }
+
+.mode-buttons { display: flex; gap: 14px; flex-wrap: wrap; justify-content: center; }
+
+.btn-secondary {
+  font-family: 'Nunito', sans-serif; font-weight: 900; font-size: 17px; letter-spacing: 1px;
+  padding: 14px 36px; border-radius: 999px; cursor: pointer;
+  background: transparent; border: 3px solid var(--gold); color: var(--gold);
+  transition: all .12s ease;
+}
+.btn-secondary:hover:not(:disabled) { background: rgba(200,164,74,0.15); transform: translateY(-2px); }
+.btn-secondary:disabled { opacity: 0.4; cursor: not-allowed; }
+
+.mp-note { font-size: 13px; color: #f0a4a4; font-weight: 700; }
+
+/* ============ LOBBY / JOIN ============ */
+#screen-lobby, #screen-join { justify-content: center; padding: 30px 16px; }
+.lobby-box {
+  text-align: center; background: rgba(0,0,0,0.3); border-radius: 24px;
+  padding: 38px 46px; box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+  border: 1px solid rgba(255,255,255,0.12);
+  display: flex; flex-direction: column; align-items: center; gap: 18px;
+  max-width: 480px;
+}
+.lobby-title { font-family: 'Nunito', sans-serif; font-weight: 900; font-size: 26px; }
+.lobby-sub { color: rgba(255,255,255,0.75); font-weight: 700; line-height: 1.5; }
+.qr-box {
+  background: #fff; padding: 14px; border-radius: 16px; line-height: 0;
+  box-shadow: 0 8px 26px rgba(0,0,0,0.35);
+}
+.qr-box img { width: 220px; height: 220px; image-rendering: pixelated; }
+.invite-row { display: flex; gap: 8px; width: 100%; }
+.invite-link {
+  flex: 1; min-width: 0; padding: 9px 12px; border-radius: 10px;
+  border: 1px solid rgba(255,255,255,0.25); background: rgba(0,0,0,0.25);
+  color: rgba(255,255,255,0.85); font-family: inherit; font-size: 12px; font-weight: 700;
+}
+.lobby-status { font-weight: 800; font-size: 15px; color: var(--gold); min-height: 24px; }
+
+.btn-ghost {
+  font-family: inherit; font-weight: 800; font-size: 13px;
+  padding: 8px 16px; border-radius: 999px; cursor: pointer;
+  background: transparent; border: 2px solid rgba(255,255,255,0.3); color: rgba(255,255,255,0.85);
+  transition: all .12s ease;
+}
+.btn-ghost:hover { border-color: #fff; color: #fff; }
+
+/* ============ GAME SCREEN ============ */
+#screen-game { padding: 14px 16px 40px; gap: 12px; }
+
+.game-header {
+  width: 100%; max-width: 1060px;
+  display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
+}
+.game-title {
+  font-family: 'Nunito', sans-serif; font-weight: 900; letter-spacing: 2px;
+  font-size: 15px; text-transform: uppercase; color: var(--gold);
+  flex: 1; text-align: center;
+}
+.counts { display: flex; gap: 10px; }
+.count {
+  display: flex; flex-direction: column; align-items: center; min-width: 74px;
+  background: rgba(0,0,0,0.25); border-radius: 12px; padding: 5px 12px;
+}
+.count-label { font-size: 10px; text-transform: uppercase; letter-spacing: 1.5px; color: rgba(255,255,255,0.6); font-weight: 800; }
+.count-num { font-family: 'Nunito', sans-serif; font-weight: 900; font-size: 20px; line-height: 1.1; }
+.count-player .count-num { color: #8fd7a9; }
+.count-cpu .count-num { color: #f0a4a4; }
+.count-pot { border: 1px solid rgba(200,164,74,0.6); }
+.count-pot .count-num { color: var(--gold); }
+
+.status-bar {
+  width: 100%; max-width: 1060px; text-align: center;
+  font-weight: 800; font-size: 16px; min-height: 26px;
+  color: rgba(255,255,255,0.92);
+}
+.status-bar .hl { color: var(--gold); }
+
+.table {
+  width: 100%; max-width: 1060px; flex: 1;
+  display: flex; gap: 18px; align-items: flex-start; justify-content: center;
+}
+
+.card-slot { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+.slot-title {
+  font-size: 11px; letter-spacing: 3px; text-transform: uppercase;
+  font-weight: 800; color: rgba(255,255,255,0.6);
+}
+
+.table-mid {
+  display: flex; flex-direction: column; align-items: center; gap: 16px;
+  align-self: center; min-width: 190px; padding-top: 30px;
+}
+.vs-badge {
+  width: 58px; height: 58px; border-radius: 50%;
+  background: rgba(0,0,0,0.3); border: 2px solid var(--gold); color: var(--gold);
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Nunito', sans-serif; font-weight: 900; font-size: 19px;
+}
+.result-banner {
+  text-align: center; font-family: 'Nunito', sans-serif; font-weight: 900;
+  font-size: 19px; line-height: 1.35; padding: 12px 18px; border-radius: 14px;
+  background: rgba(0,0,0,0.35); max-width: 230px;
+  animation: pop .3s ease;
+}
+.result-banner.win  { color: #8fd7a9; box-shadow: 0 0 0 2px rgba(143,215,169,0.5); }
+.result-banner.lose { color: #f0a4a4; box-shadow: 0 0 0 2px rgba(240,164,164,0.5); }
+.result-banner.tie  { color: var(--gold); box-shadow: 0 0 0 2px rgba(200,164,74,0.5); }
+.result-banner .detail { display: block; font-size: 13px; font-weight: 700; color: rgba(255,255,255,0.75); margin-top: 6px; }
+
+@keyframes pop { from { transform: scale(0.85); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+
+/* ============ CARDS (generic) ============ */
+.card-holder { perspective: 1200px; }
+
+.tcard {
+  width: 272px; border-radius: 20px; overflow: hidden;
+  display: flex; flex-direction: column; background: #fff; color: #333;
+  box-shadow: 0 14px 40px rgba(0,0,0,0.45);
+  animation: dealIn .35s ease;
+}
+@keyframes dealIn { from { transform: translateY(16px) rotateY(14deg); opacity: 0; } to { transform: none; opacity: 1; } }
+
+/* stat rows */
+.stat-row {
+  display: flex; align-items: center; gap: 7px;
+  padding: 5px 8px; border-radius: 9px; border: 2px solid transparent;
+  transition: background .12s ease, border-color .12s ease, transform .12s ease;
+}
+.stat-row.clickable { cursor: pointer; }
+.stat-row.clickable:hover { background: #eef3fb; border-color: #b9cbe3; transform: translateX(2px); }
+.stat-row.chosen { background: #fdf3d8 !important; border-color: var(--gold) !important; }
+.stat-row.won-row { background: #e2f5e8 !important; border-color: #4a9e6a !important; }
+.stat-row.lost-row { background: #fbe4e4 !important; border-color: #c86a6a !important; }
+
+.stat-emoji { font-size: 15px; width: 22px; text-align: center; flex-shrink: 0; line-height: 1; }
+.stat-label {
+  font-size: 10.5px; flex: 1; font-weight: 800; text-transform: uppercase;
+  letter-spacing: 0.5px; color: #8a97a8; line-height: 1.1;
+}
+.stat-bar-wrap { width: 54px; height: 7px; background: #eef1f8; border-radius: 4px; flex-shrink: 0; overflow: hidden; }
+.stat-bar { height: 100%; border-radius: 4px; }
+.stat-num {
+  font-size: 15px; font-weight: 800; min-width: 26px; text-align: right;
+  line-height: 1; color: #4a5566; font-family: 'Nunito', sans-serif;
+}
+
+/* Tauben card pieces */
+.tc-head { padding: 9px 13px; display: flex; align-items: center; gap: 9px; }
+.tc-head-brand { color: var(--gold); font-size: 9px; font-weight: 800; letter-spacing: 3px; text-transform: uppercase; flex: 1; }
+.tc-id { color: var(--navy); background: var(--gold); border-radius: 999px; font-size: 10.5px; font-weight: 900; padding: 2px 9px; font-family: 'Nunito', sans-serif; }
+.tc-art { position: relative; height: 190px; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+.tc-art .bub1 { position: absolute; top: -36px; right: -36px; width: 118px; height: 118px; border-radius: 50%; background: rgba(255,255,255,0.35); }
+.tc-art .bub2 { position: absolute; bottom: -28px; left: -28px; width: 90px; height: 90px; border-radius: 50%; background: rgba(255,255,255,0.28); }
+.tc-art img { position: relative; width: 182px; height: 182px; object-fit: contain; mix-blend-mode: multiply; }
+.tc-name { padding: 8px 13px; display: flex; align-items: center; justify-content: center; gap: 10px; }
+.tc-name .star { color: rgba(255,255,255,0.55); font-size: 12px; }
+.tc-name .nm { color: #fff; font-family: 'Nunito', sans-serif; font-size: 17px; font-weight: 900; letter-spacing: 0.4px; }
+.tc-stats { padding: 10px 10px; display: flex; flex-direction: column; gap: 3px; background: #fff; }
+.tc-foot { padding: 8px 14px; display: flex; justify-content: space-between; align-items: center; }
+.tc-foot .lbl { font-size: 9px; font-weight: 800; letter-spacing: 2.5px; text-transform: uppercase; opacity: 0.7; }
+.tc-foot .tot { font-family: 'Nunito', sans-serif; font-weight: 900; font-size: 19px; }
+
+/* HP card pieces */
+.hp-card { background: var(--parchment); color: var(--ink); }
+.hp-head { padding: 7px 12px; display: flex; justify-content: space-between; align-items: center; }
+.hp-head .hp-num { font-family: 'Cinzel', serif; font-size: 11px; font-weight: 700; letter-spacing: 1px; color: rgba(0,0,0,0.65); }
+.hp-head .haus { font-family: 'Cinzel', serif; font-size: 9px; font-weight: 700; letter-spacing: 1.5px; color: rgba(0,0,0,0.75); text-transform: uppercase; }
+.hp-art-wrap { padding: 10px 10px 8px; }
+.hp-art { position: relative; border-radius: 7px; overflow: hidden; border: 1.5px solid rgba(0,0,0,0.12); height: 222px; }
+.hp-art img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 50% 20%; }
+.hp-name { padding: 8px 12px 6px; border-bottom: 1px solid rgba(0,0,0,0.08); }
+.hp-name .nm { font-family: 'Cinzel', serif; font-size: 15px; font-weight: 700; letter-spacing: 0.5px; line-height: 1.25; }
+.hp-name .zug { font-family: 'Crimson Text', serif; font-size: 13px; font-style: italic; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.hp-stats { background: #ede5ce; padding: 8px 9px; display: flex; flex-direction: column; gap: 2px; }
+.hp-stats .stat-label { color: #5a4820; font-family: 'Cinzel', serif; letter-spacing: 0.3px; }
+.hp-stats .stat-num { color: var(--ink); }
+.hp-stats .stat-bar-wrap { background: rgba(0,0,0,0.1); }
+.hp-stats .stat-row.clickable:hover { background: #f7efd9; border-color: #cbb87e; }
+.hp-fakt { padding: 7px 12px 8px; border-top: 1px solid rgba(0,0,0,0.08); font-family: 'Crimson Text', serif; font-size: 12px; font-style: italic; color: #4a3a18; line-height: 1.4; }
+.hp-foot { padding: 6px 12px; display: flex; justify-content: space-between; align-items: center; }
+.hp-foot .lbl { font-family: 'Cinzel', serif; font-size: 8px; letter-spacing: 3px; color: rgba(0,0,0,0.55); text-transform: uppercase; }
+.hp-foot .tot { font-family: 'Cinzel', serif; font-size: 19px; font-weight: 700; color: rgba(0,0,0,0.8); }
+
+/* card back */
+.card-back {
+  width: 272px; height: 430px; border-radius: 20px;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px;
+  box-shadow: 0 14px 40px rgba(0,0,0,0.45);
+  border: 3px solid rgba(255,255,255,0.18);
+  animation: dealIn .35s ease;
+}
+.card-back.back-tauben {
+  background: repeating-linear-gradient(45deg, #16336a 0 14px, #12295a 14px 28px);
+}
+.card-back.back-hp {
+  background: repeating-linear-gradient(45deg, #3a2c50 0 14px, #302344 14px 28px);
+}
+.card-back .back-emblem {
+  width: 92px; height: 92px; border-radius: 50%;
+  border: 3px solid var(--gold); display: flex; align-items: center; justify-content: center;
+  font-size: 40px; background: rgba(0,0,0,0.25);
+}
+.card-back .back-text {
+  font-family: 'Nunito', sans-serif; font-weight: 900; letter-spacing: 3px;
+  font-size: 12px; color: var(--gold); text-transform: uppercase; text-align: center; line-height: 1.6;
+}
+
+.thinking { display: inline-block; animation: blink 1s ease infinite; }
+@keyframes blink { 0%,100% { opacity: 0.35; } 50% { opacity: 1; } }
+
+/* ============ END SCREEN ============ */
+#screen-end { justify-content: center; padding: 30px 16px; }
+.end-box {
+  text-align: center; background: rgba(0,0,0,0.3); border-radius: 24px;
+  padding: 48px 56px; box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+  border: 1px solid rgba(255,255,255,0.12);
+}
+.end-emoji { font-size: 64px; margin-bottom: 12px; }
+.end-title { font-family: 'Nunito', sans-serif; font-weight: 900; font-size: 34px; letter-spacing: 1px; margin-bottom: 10px; }
+.end-sub { color: rgba(255,255,255,0.75); font-weight: 700; margin-bottom: 28px; }
+.end-actions { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; }
+
+/* ============ RESPONSIVE ============ */
+@media (max-width: 780px) {
+  .table { flex-direction: column; align-items: center; gap: 10px; }
+  .table-mid { padding-top: 0; flex-direction: row; min-width: 0; gap: 12px; order: 2; }
+  .slot-cpu { order: 3; }
+  .vs-badge { width: 44px; height: 44px; font-size: 15px; }
+  .tcard, .card-back { width: 250px; }
+  .card-back { height: 200px; }
+  .game-header { justify-content: center; }
+}

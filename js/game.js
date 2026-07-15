@@ -135,6 +135,50 @@
     return '<div class="card-back"><img src="' + src + '" alt="Kartenrücken"></div>';
   }
 
+  // ---------- Animation helpers ----------
+  function flipReveal(container, newHtml, done) {
+    container.classList.add('flipping');
+    container.style.transition = 'transform 160ms ease-in';
+    container.style.transform = 'scaleX(0)';
+    setTimeout(() => {
+      container.innerHTML = newHtml;
+      void container.offsetWidth; // force reflow so transition sees the scaleX(0) start point
+      container.style.transition = 'transform 230ms cubic-bezier(0.34,1.4,0.64,1)';
+      container.style.transform = 'scaleX(1)';
+      setTimeout(() => {
+        container.classList.remove('flipping');
+        container.style.transform = '';
+        container.style.transition = '';
+        if (done) done();
+      }, 245);
+    }, 175);
+  }
+
+  function animateStatBars(container) {
+    const bars = container.querySelectorAll('.stat-bar');
+    if (!bars.length) return;
+    const widths = Array.from(bars).map((b) => b.style.width);
+    bars.forEach((b) => { b.style.transition = 'none'; b.style.width = '0%'; });
+    void container.offsetWidth; // force reflow so transition sees the 0% start point
+    bars.forEach((b, i) => {
+      b.style.transition = 'width .42s cubic-bezier(0.4,0,0.2,1) ' + (i * 50) + 'ms';
+      b.style.width = widths[i];
+    });
+  }
+
+  function bumpEl(el) {
+    el.classList.remove('count-bump');
+    void el.offsetWidth;
+    el.classList.add('count-bump');
+  }
+
+  function pulseVs() {
+    const vs = $('#vs-badge');
+    vs.classList.remove('pulse');
+    void vs.offsetWidth;
+    vs.classList.add('pulse');
+  }
+
   // ---------- Shared UI ----------
   function setStatus(html) {
     $('#status-bar').innerHTML = html;
@@ -149,9 +193,10 @@
   }
 
   function updateCounts(my, opp, pot) {
-    $('#count-player').textContent = my;
-    $('#count-cpu').textContent = opp;
-    $('#count-pot').textContent = pot;
+    const pEl = $('#count-player'), cEl = $('#count-cpu'), potEl = $('#count-pot');
+    if (pEl.textContent !== String(my)) { pEl.textContent = my; bumpEl(pEl); } else { pEl.textContent = my; }
+    if (cEl.textContent !== String(opp)) { cEl.textContent = opp; bumpEl(cEl); } else { cEl.textContent = opp; }
+    potEl.textContent = pot;
     $('#pot-wrap').hidden = pot === 0;
     const oppLabel = state.mode === 'cpu' ? 'Computer' : 'Freund';
     $('#count-opp-label').textContent = oppLabel;
@@ -162,6 +207,8 @@
     $('#card-player').querySelectorAll('.stat-row').forEach((row) => {
       row.addEventListener('click', () => {
         if (state.phase !== 'choose' || state.turn !== 'me') return;
+        row.classList.add('picking');
+        setTimeout(() => row.classList.remove('picking'), 300);
         const idx = parseInt(row.dataset.idx, 10);
         if (state.mode === 'guest') {
           state.phase = 'wait';
@@ -181,11 +228,15 @@
     $('#result-banner').hidden = true;
     $('#btn-next').hidden = true;
     $('#card-player').innerHTML = renderCard(myCard, { clickable: myTurn });
+    animateStatBars($('#card-player'));
     $('#card-cpu').innerHTML = renderBack();
+    pulseVs();
     if (myTurn) {
       setStatus('<span class="hl">Du bist dran</span> — wähle eine Kategorie auf deiner Karte!');
       attachPickHandlers();
     } else {
+      const back = $('#card-cpu').querySelector('.card-back');
+      if (back) back.classList.add('thinking-card');
       setStatus(esc(OPP_NAME()) + ' ist dran <span class="thinking">… bitte warten …</span>');
     }
   }
@@ -200,26 +251,42 @@
       if (outcome === 'me') { myOpts.wonRow = catIdx; oppOpts.lostRow = catIdx; }
       else if (outcome === 'opp') { myOpts.lostRow = catIdx; oppOpts.wonRow = catIdx; }
       else { myOpts.chosen = catIdx; oppOpts.chosen = catIdx; }
-      $('#card-player').innerHTML = renderCard(myCard, myOpts);
-      $('#card-cpu').innerHTML = renderCard(oppCard, oppOpts);
 
-      const banner = $('#result-banner');
-      banner.hidden = false;
-      banner.className = 'result-banner';
-      const detail = cat.emoji + ' ' + esc(cat.label) + ': <b>' + myCard.values[catIdx] + '</b> gegen <b>' + oppCard.values[catIdx] + '</b>';
-      if (outcome === 'me') {
-        banner.classList.add('win');
-        banner.innerHTML = 'Du gewinnst die Runde! 🎉<span class="detail">' + detail + '</span>';
-      } else if (outcome === 'opp') {
-        banner.classList.add('lose');
-        banner.innerHTML = esc(OPP_NAME()) + ' gewinnt. 😐<span class="detail">' + detail + '</span>';
-      } else {
-        banner.classList.add('tie');
-        banner.innerHTML = 'Gleichstand! Beide Karten kommen in den Topf.<span class="detail">' + detail + '</span>';
-      }
-      setStatus('');
-      updateCounts(counts.my, counts.opp, counts.pot);
-      $('#btn-next').hidden = false;
+      // Flip the CPU card over, then show results
+      flipReveal($('#card-cpu'), renderCard(oppCard, oppOpts), () => {
+        animateStatBars($('#card-cpu'));
+
+        // Fade-highlight the player card
+        const playerSlot = $('#card-player');
+        playerSlot.style.transition = 'opacity .15s ease';
+        playerSlot.style.opacity = '0.25';
+        setTimeout(() => {
+          playerSlot.innerHTML = renderCard(myCard, myOpts);
+          playerSlot.style.transition = 'opacity .18s ease';
+          playerSlot.style.opacity = '1';
+          setTimeout(() => { playerSlot.style.transition = ''; }, 200);
+          animateStatBars(playerSlot);
+        }, 160);
+
+        // Result banner
+        const banner = $('#result-banner');
+        banner.hidden = false;
+        banner.className = 'result-banner';
+        const detail = cat.emoji + ' ' + esc(cat.label) + ': <b>' + myCard.values[catIdx] + '</b> gegen <b>' + oppCard.values[catIdx] + '</b>';
+        if (outcome === 'me') {
+          banner.classList.add('win');
+          banner.innerHTML = 'Du gewinnst die Runde! 🎉<span class="detail">' + detail + '</span>';
+        } else if (outcome === 'opp') {
+          banner.classList.add('lose');
+          banner.innerHTML = esc(OPP_NAME()) + ' gewinnt. 😐<span class="detail">' + detail + '</span>';
+        } else {
+          banner.classList.add('tie');
+          banner.innerHTML = 'Gleichstand! Beide Karten kommen in den Topf.<span class="detail">' + detail + '</span>';
+        }
+        setStatus('');
+        updateCounts(counts.my, counts.opp, counts.pot);
+        $('#btn-next').hidden = false;
+      });
     };
 
     if (announce) {
@@ -242,6 +309,9 @@
     const title = $('#end-title');
     const sub = $('#end-sub');
     const opp = OPP_NAME();
+    emoji.style.animation = 'none';
+    void emoji.offsetWidth;
+    emoji.style.animation = '';
     if (result === 'tie') {
       emoji.textContent = '🤝';
       title.textContent = 'Unentschieden!';

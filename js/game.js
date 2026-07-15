@@ -18,6 +18,155 @@
     return String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
   }
 
+  // ===== WESEN ABILITY ENGINE =====
+  const CN = ['Kraft','Magie','Bedrohung','Seltenheit','MM-Klasse'];
+  function addV(v,i,d){ const r=v.slice(); r[i]=Math.max(1,r[i]+d); return r; }
+  function setV(v,i,x){ const r=v.slice(); r[i]=Math.max(1,x); return r; }
+  function addAll(v,d){ return v.map(x=>Math.max(1,x+d)); }
+  function useOnce(uses,key){ if(uses[key])return false; uses[key]=true; return true; }
+  let _keepMsg = null; // set by distribute(), read by resolveRoundCpu()
+
+  const WESEN_AB = {
+    // ── PASSIV ──
+    'Schwarm':           c => c.oppV[0]<6 ? {myV:addV(c.myV,0,2),msg:'Schwarm: Kraft +2'} : null,
+    'Wächter':           c => c.oppV[3]<6 ? {myV:addV(c.myV,3,2),msg:'Wächter: Seltenheit +2'} : null,
+    'Zaubererloyal':     c => c.myDeckLen>c.oppDeckLen ? {myV:addV(c.myV,0,2),msg:'Zaubererloyal: Kraft +2'} : null,
+    'Giftbiss':          c => c.cat===2 ? {oppV:addV(c.oppV,0,-1),msg:'Giftbiss: Gegner-Kraft -1'} : null,
+    'Boteninstinkt':     c => c.cat===3 ? {myV:addV(c.myV,3,2),msg:'Boteninstinkt: Seltenheit +2'} : null,
+    'Tanz der Feen':     c => c.myDeckLen>c.oppDeckLen ? {myV:addV(c.myV,2,2),msg:'Tanz der Feen: Bedrohung +2'} : null,
+    'Freier Flug':       c => c.cat===2 ? {myV:addV(c.myV,2,2),msg:'Freier Flug: Bedrohung +2'} : null,
+    'Tarnfarbe':         c => ({myV:addV(c.myV,3,2),msg:'Tarnfarbe: Seltenheit +2'}),
+    'Feuerfest':         c => c.oppCard.kat==='Drachen' ? {myV:addV(c.myV,1,2),msg:'Feuerfest: Magie +2 (gegen Drachen)'} : null,
+    'Licht':             c => c.oppCard.kat==='Geister' ? {oppV:addV(c.oppV,1,-2),msg:'Licht: Gegner-Magie -2 (gegen Geister)'} : null,
+    'Magiepanzer':       c => c.cat===1 ? {oppV:addV(c.oppV,1,-2),msg:'Magiepanzer: Gegner-Magie -2'} : null,
+    'Fluchtinstinkt':    c => c.cat===2 ? {winTie:true,msg:'Fluchtinstinkt: Gewinnt Bedrohungs-Gleichstand'} : null,
+    'Muggelradar':       c => c.cat===3 ? {myV:addV(c.myV,3,3),msg:'Muggelradar: Seltenheit +3'} : null,
+    'Meeresherrscher':   c => c.oppV[3]<8 ? {myV:addV(addV(c.myV,0,1),1,1),msg:'Meeresherrscher: Kraft & Magie +1'} : null,
+    'Tödlicher Stachel': c => c.cat===0 ? {winTie:true,msg:'Tödlicher Stachel: Gewinnt Kraft-Gleichstand'} : null,
+    'Vollmondtanz':      c => c.cat===3 ? {myV:addV(c.myV,3,2),msg:'Vollmondtanz: Seltenheit +2'} : null,
+    'Blitzangriff':      c => c.cat===2 ? {myV:addAll(c.myV,1),msg:'Blitzangriff: Alle Werte +1'} : null,
+    'Fünf Beine':        c => ({myV:addV(c.myV,2,2),msg:'Fünf Beine: Bedrohung +2'}),
+    'Heiliger Käfer':    c => ({myV:addV(c.myV,3,2),msg:'Heiliger Käfer: Seltenheit +2'}),
+    'Schwarmangriff':    c => c.oppV[0]>7 ? {myV:addV(c.myV,0,3),msg:'Schwarmangriff: Kraft +3'} : null,
+    'Meerestiefe':       c => c.oppV[3]<6 ? {myV:addV(c.myV,2,2),msg:'Meerestiefe: Bedrohung +2'} : null,
+    'Nur für Eingeweihte': c => c.cat===3 ? {myV:addV(c.myV,3,3),msg:'Nur für Eingeweihte: Seltenheit +3'} : null,
+    'Silberpanzer':      c => c.cat===1 ? {oppV:addV(c.oppV,1,-2),msg:'Silberpanzer: Gegner-Magie -2'} : null,
+    'Tarnung':           (c,mt) => mt ? {msg:'Tarnung: Deine Werte sind verborgen'} : null,
+    'Dreifachnatur':     () => null,
+    'Drei Köpfe':        () => null,
+    // ── AKTIV (myTurn = true wenn Besitzer wählt) ──
+    'Opalblick':         (c,mt) => mt ? {oppV:setV(c.oppV,2,Math.min(c.oppV[2],4)),msg:'Opalblick: Gegner-Bedrohung → 4'} : null,
+    'Keulenhieb':        (c,mt) => mt&&c.cat===0 ? {myV:addV(c.myV,0,3),msg:'Keulenhieb: Kraft +3'} : null,
+    'Levitation':        (c,mt) => mt ? {oppV:setV(c.oppV,2,Math.min(c.oppV[2],1)),msg:'Levitation: Gegner-Bedrohung → 1'} : null,
+    'Desorientierung':   (c,mt) => mt ? {forceNonBest:true,msg:'Desorientierung: Gegner muss andere Kategorie wählen'} : null,
+    'Feuerball':         (c,mt) => mt&&c.cat===1 ? {myV:addV(c.myV,1,3),msg:'Feuerball: Magie +3'} : null,
+    'Blutsauger':        (c,mt) => mt ? {myV:addV(c.myV,c.cat,2),oppV:addV(c.oppV,c.cat,-2),msg:'Blutsauger: Stehle 2 Punkte'} : null,
+    'Unsichtbarkeit':    (c,mt) => mt ? {msg:'Unsichtbarkeit: Deine Werte sind verborgen'} : null,
+    'Sturm':             (c,mt) => mt ? {oppV:addAll(c.oppV,-1),msg:'Sturm: Alle Gegner-Werte -1'} : null,
+    'Meeresherr':        (c,mt) => mt&&(c.cat===0||c.cat===1) ? {myV:addV(c.myV,c.cat,2),msg:'Meeresherr: '+CN[c.cat]+' +2'} : null,
+    'Einfrieren':        (c,mt) => mt ? {oppV:setV(c.oppV,2,Math.min(c.oppV[2],2)),msg:'Einfrieren: Gegner-Bedrohung → 2'} : null,
+    'Pfeifenzauber':     (c,mt) => mt&&c.cat===1 ? {oppV:addV(c.oppV,1,-2),msg:'Pfeifenzauber: Gegner-Magie -2'} : null,
+    'Feueratem':         (c,mt,uses,id) => mt&&c.cat===1&&useOnce(uses,id+'_fa') ? {myV:addV(c.myV,1,3),msg:'Feueratem: Magie +3 ⚡'} : null,
+    'Wahnsinnslied':     (c,mt) => mt ? {forceNonBest:true,msg:'Wahnsinnslied: Gegner wählt zufällig!'} : null,
+    'Gartenwüter':       (c,mt) => {
+      if(!mt)return null;
+      const others=[0,1,2,4], best=others.reduce((a,b)=>c.myV[a]>=c.myV[b]?a:b);
+      if(best===3)return {msg:'Gartenwüter: Seltenheit ist bereits am höchsten'};
+      const v=c.myV.slice(); [v[3],v[best]]=[v[best],v[3]];
+      return {myV:v,msg:'Gartenwüter: Seltenheit ↔ '+CN[best]};
+    },
+    'Melancholie':       (c,mt) => mt ? {oppV:addV(c.oppV,1,-2),msg:'Melancholie: Gegner-Magie -2'} : null,
+    'Reißen':            (c,mt) => mt&&c.cat===2 ? {oppV:addV(c.oppV,2,-2),msg:'Reißen: Gegner-Bedrohung -2'} : null,
+    'Adlerstolz':        (c,mt) => !mt&&c.cat===0 ? {myV:addV(c.myV,0,2),msg:'Adlerstolz: Kraft +2'} : null,
+    'Verschwinden lassen': (c,mt) => mt ? {oppV:setV(c.oppV,c.cat,1),msg:'Verschwinden lassen: Gegner-'+CN[c.cat]+' → 1'} : null,
+    'Dunkelmantel':      (c,mt) => mt&&(c.cat===0||c.cat===2) ? {winTie:true,msg:'Dunkelmantel: Gewinnt Gleichstand'} : null,
+    'Scheingold':        (c,mt) => {
+      if(!mt)return null;
+      const mv=c.myV.slice(),ov=c.oppV.slice(); [mv[3],ov[3]]=[ov[3],mv[3]];
+      return {myV:mv,oppV:ov,msg:'Scheingold: Seltenheit getauscht'};
+    },
+    'Giftschleuder':     (c,mt) => mt ? {oppV:addV(c.oppV,0,-2),msg:'Giftschleuder: Gegner-Kraft -2'} : null,
+    'Schatzsuche':       (c,mt) => {
+      if(!mt)return null;
+      const b=Math.floor(c.oppV[3]/2);
+      return b>0 ? {myV:addV(c.myV,3,b),msg:'Schatzsuche: Seltenheit +'+b} : null;
+    },
+    'Stachelschutz':     (c,mt) => mt&&c.cat===0 ? {oppV:addV(c.oppV,0,-2),msg:'Stachelschutz: Gegner-Kraft -2'} : null,
+    'Wolfsverwandlung':  (c,mt) => {
+      if(!mt)return null;
+      const v=c.myV.slice(); [v[0],v[2]]=[v[2],v[0]];
+      return {myV:v,msg:'Wolfsverwandlung: Kraft ↔ Bedrohung'};
+    },
+    'Stärkeblut':        (c,mt,uses,id) => mt&&useOnce(uses,id+'_sb') ? {myV:addV(c.myV,0,3),msg:'Stärkeblut: Kraft +3 ⚡'} : null,
+    'Blaue Flammen':     (c,mt) => mt&&c.cat===1 ? {myV:addV(c.myV,1,3),msg:'Blaue Flammen: Magie +3'} : null,
+    'Giftpfeil':         (c,mt) => mt ? {oppV:addV(c.oppV,c.cat,-3),msg:'Giftpfeil: Gegner-'+CN[c.cat]+' -3'} : null,
+    'Höllenflammen':     (c,mt) => mt&&(c.cat===0||c.cat===1) ? {myV:addV(c.myV,c.cat,3),msg:'Höllenflammen: '+CN[c.cat]+' +3'} : null,
+    'Unsichtbares Wesen':(c,mt) => mt ? {msg:'Unsichtbares Wesen: Deine Werte sind verborgen'} : null,
+    'Keulenwirbel':      (c,mt) => mt&&c.cat===0 ? {myV:addV(c.myV,0,2),msg:'Keulenwirbel: Kraft +2'} : null,
+    'Hornaufspießen':    (c,mt) => mt&&c.cat===0 ? {myV:addV(c.myV,0,2),oppV:addV(c.oppV,0,-1),msg:'Hornaufspießen: Kraft +2, Gegner-Kraft -1'} : null,
+    'Vollmondwut':       (c,mt) => mt&&(c.cat===0||c.cat===2) ? {myV:addV(c.myV,c.cat,3),msg:'Vollmondwut: '+CN[c.cat]+' +3'} : null,
+    'Explosion':         (c,mt) => mt&&c.cat===0 ? {myV:addV(c.myV,0,2),msg:'Explosion: Kraft +2'} : null,
+    'Kreischen':         (c,mt) => mt ? {oppV:addV(c.oppV,2,-2),msg:'Kreischen: Gegner-Bedrohung -2'} : null,
+    // ── REAKTIV (myTurn = false wenn Gegner wählt) ──
+    'Regenruf':          (c,mt) => !mt&&c.cat===1 ? {oppV:addV(c.oppV,1,-2),msg:'Regenruf: Gegner-Magie -2'} : null,
+    'Feuerhintern':      (c,mt) => !mt&&c.cat===0 ? {oppV:addV(c.oppV,0,-2),msg:'Feuerhintern: Gegner-Kraft -2'} : null,
+    'Todesomen':         (c,mt) => !mt&&c.cat===3 ? {oppV:addV(c.oppV,3,-3),msg:'Todesomen: Gegner-Seltenheit -3'} : null,
+    'Anker':             (c,mt) => !mt&&c.cat===2 ? {oppV:setV(c.oppV,2,1),msg:'Anker: Gegner-Bedrohung → 1'} : null,
+    'Kammangriff':       (c,mt) => !mt&&c.cat===0 ? {myV:addV(c.myV,0,2),msg:'Kammangriff: Kraft +2'} : null,
+    'Seegeheimnis':      (c,mt) => !mt&&c.cat===3 ? {myV:addV(c.myV,3,3),msg:'Seegeheimnis: Seltenheit +3'} : null,
+    'Klebeschleim':      (c,mt) => !mt&&c.cat===2 ? {oppV:addV(c.oppV,2,-3),msg:'Klebeschleim: Gegner-Bedrohung -3'} : null,
+    'Schneesturm':       c => (c.cat===0||c.cat===2) ? {oppV:addV(c.oppV,2,-2),msg:'Schneesturm: Gegner-Bedrohung -2'} : null,
+    // ── BEI VERLUST ──
+    'Teleport':          () => ({keepCard:'once',msg:'Teleport: Karte behalten!'}),
+    'Energiesog':        () => ({keepCard:'always',msg:'Energiesog: Karte behalten!'}),
+    'Schrumpfen':        () => ({keepCard:'once',msg:'Schrumpfen: Karte behalten!'}),
+    'Unzerstörbar':      () => ({keepCard:'chance50',msg:'Unzerstörbar'}),
+    // ── AUTO-WIN ──
+    'Tödlicher Blick':   (c,mt,uses,id) => mt&&useOnce(uses,id+'_tb') ? {autoWin:true,msg:'Tödlicher Blick: Automatischer Sieg! 💀'} : null,
+  };
+
+  function applyWesenAbilities(myCard, oppCard, catIdx, playerPicks) {
+    let myV = myCard.values.slice(), oppV = oppCard.values.slice();
+    let autoWin = null, keepCardMe = null, keepCardOpp = null;
+    let winTie = null, forceNonBest = false;
+    const msgs = [];
+
+    const applyOne = (ab, cardId, card, oppRef, myLen, oppLen, isMyTurn, side) => {
+      if (!ab) return;
+      const ctx = {
+        myV: side==='me' ? myV : oppV,
+        oppV: side==='me' ? oppV : myV,
+        cat: catIdx, myCard: card, oppCard: oppRef,
+        myDeckLen: myLen, oppDeckLen: oppLen,
+      };
+      const r = ab(ctx, isMyTurn, state.abilityUses, cardId);
+      if (!r) return;
+      if (side === 'me') {
+        if (r.myV) myV = r.myV;
+        if (r.oppV) oppV = r.oppV;
+        if (r.autoWin) autoWin = 'me';
+        if (r.keepCard) keepCardMe = r;
+        if (r.winTie && !winTie) winTie = 'me';
+      } else {
+        if (r.myV) oppV = r.myV;
+        if (r.oppV) myV = r.oppV;
+        if (r.autoWin) autoWin = 'opp';
+        if (r.keepCard) keepCardOpp = r;
+        if (r.winTie && !winTie) winTie = 'opp';
+      }
+      if (r.forceNonBest) forceNonBest = true;
+      if (r.msg) msgs.push({ side, text: r.msg });
+    };
+
+    applyOne(WESEN_AB[myCard.faehigkeit], myCard.id, myCard, oppCard,
+             state.myDeck.length, state.oppDeck.length, playerPicks, 'me');
+    applyOne(WESEN_AB[oppCard.faehigkeit], oppCard.id, oppCard, myCard,
+             state.oppDeck.length, state.myDeck.length, !playerPicks, 'opp');
+
+    return { myV, oppV, autoWin, keepCardMe, keepCardOpp, winTie, forceNonBest, msgs };
+  }
+  // ===== END ABILITY ENGINE =====
+
   // ---------- State ----------
   const state = {
     mode: 'cpu',          // 'cpu' | 'host' | 'guest'
@@ -261,7 +410,7 @@
   }
 
   // Enthüllung mit kurzer Ankündigung der Kategorie
-  function showReveal(myCard, oppCard, catIdx, outcome, counts, announce) {
+  function showReveal(myCard, oppCard, catIdx, outcome, counts, announce, abilMsgs, effVals) {
     state.phase = 'reveal';
     const cat = state.quartett.categories[catIdx];
     const doReveal = () => {
@@ -291,7 +440,9 @@
         const banner = $('#result-banner');
         banner.hidden = false;
         banner.className = 'result-banner';
-        const detail = cat.emoji + ' ' + esc(cat.label) + ': <b>' + myCard.values[catIdx] + '</b> gegen <b>' + oppCard.values[catIdx] + '</b>';
+        const myEffVal  = effVals ? effVals.myV[catIdx]  : myCard.values[catIdx];
+        const oppEffVal = effVals ? effVals.oppV[catIdx] : oppCard.values[catIdx];
+        const detail = cat.emoji + ' ' + esc(cat.label) + ': <b>' + myEffVal + '</b> gegen <b>' + oppEffVal + '</b>';
         if (outcome === 'me') {
           banner.classList.add('win');
           banner.innerHTML = 'Du gewinnst die Runde! 🎉<span class="detail">' + detail + '</span>';
@@ -301,6 +452,12 @@
         } else {
           banner.classList.add('tie');
           banner.innerHTML = 'Gleichstand! Beide Karten kommen in den Topf.<span class="detail">' + detail + '</span>';
+        }
+        if (abilMsgs && abilMsgs.length) {
+          const abilHtml = '<div class="abil-notifs">' +
+            abilMsgs.map(m => '<span class="abil-notif abil-' + m.side + '">' + esc(m.text) + '</span>').join('') +
+            '</div>';
+          banner.innerHTML += abilHtml;
         }
         setStatus('');
         updateCounts(counts.my, counts.opp, counts.pot);
@@ -371,6 +528,8 @@
     state.rounds = 0;
     state.turn = Math.random() < 0.5 ? 'me' : 'opp';
     state.phase = 'choose';
+    state.abilityUses = {};
+    state.forceNextCpuNonBest = false;
     showScreen('#screen-game');
     setStatus(state.turn === 'me' ? 'Du beginnst!' : 'Der Computer beginnt!');
     state.cpuTimer = setTimeout(cpuNextRound, 700);
@@ -384,19 +543,26 @@
     showChooseUi(state.myDeck[0], state.turn === 'me');
     if (state.turn === 'opp') {
       setStatus('Der Computer ist dran <span class="thinking">… er überlegt …</span>');
+      const forceNB = state.forceNextCpuNonBest;
+      state.forceNextCpuNonBest = false;
       state.cpuTimer = setTimeout(() => {
-        const idx = cpuChooseCategory();
+        const idx = cpuChooseCategory(forceNB);
         resolveRoundCpu(idx, true);
       }, 1300);
     }
   }
 
   // KI: 50 % stärkster Wert, sonst zufällig eine der übrigen Kategorien
-  function cpuChooseCategory() {
+  function cpuChooseCategory(forceNonBest) {
     const vals = state.oppDeck[0].values;
     const order = vals
       .map((v, i) => ({ v, i }))
       .sort((a, b) => b.v - a.v || Math.random() - 0.5);
+    if (forceNonBest) {
+      // Desorientierung / Wahnsinnslied: darf nicht die beste Kategorie wählen
+      const rest = order.slice(1);
+      return rest[Math.floor(Math.random() * rest.length)].i;
+    }
     if (Math.random() < 0.5) return order[0].i;
     const rest = order.slice(1);
     return rest[Math.floor(Math.random() * rest.length)].i;
@@ -408,25 +574,66 @@
     state.rounds++;
     const myCard = state.myDeck.shift();
     const oppCard = state.oppDeck.shift();
-    const outcome = distribute(myCard, oppCard, catIdx);
+
+    let abilResult = null;
+    if (state.quartett.id === 'wesen') {
+      abilResult = applyWesenAbilities(myCard, oppCard, catIdx, state.turn === 'me');
+      if (abilResult.forceNonBest && state.turn === 'me') {
+        state.forceNextCpuNonBest = true;
+      }
+    }
+
+    _keepMsg = null;
+    const outcome = distribute(myCard, oppCard, catIdx, abilResult);
+    const msgs = abilResult ? abilResult.msgs.slice() : [];
+    if (_keepMsg) msgs.push(_keepMsg);
+
     showReveal(myCard, oppCard, catIdx, outcome,
       { my: state.myDeck.length, opp: state.oppDeck.length, pot: state.pot.length },
-      announceCpu ? 'Der Computer' : null);
+      announceCpu ? 'Der Computer' : null, msgs, abilResult);
   }
 
   // Karten verteilen (cpu + host): outcome 'me' | 'opp' | 'tie'
-  function distribute(myCard, oppCard, catIdx) {
-    const a = myCard.values[catIdx], b = oppCard.values[catIdx];
+  function distribute(myCard, oppCard, catIdx, ar) {
+    const myV   = ar ? ar.myV   : myCard.values;
+    const oppV  = ar ? ar.oppV  : oppCard.values;
+    const autoW = ar ? ar.autoWin  : null;
+    const wTie  = ar ? ar.winTie   : null;
+    const kcMe  = ar ? ar.keepCardMe  : null;
+
     let outcome;
-    if (a > b) outcome = 'me';
-    else if (b > a) outcome = 'opp';
-    else outcome = 'tie';
+    if (autoW) {
+      outcome = autoW;
+    } else {
+      const a = myV[catIdx], b = oppV[catIdx];
+      if (a > b) outcome = 'me';
+      else if (b > a) outcome = 'opp';
+      else outcome = wTie || 'tie';
+    }
+
+    // keepCard: nur anwenden wenn Besitzer verliert
+    let myCardKept = false;
+    if (outcome === 'opp' && kcMe) {
+      const kc = kcMe.keepCard;
+      if (kc === 'always') {
+        myCardKept = true;
+      } else if (kc === 'chance50') {
+        myCardKept = Math.random() < 0.5;
+        _keepMsg = { side: 'me', text: kcMe.msg + (myCardKept ? ' – Glück gehabt! (50%)' : ' – kein Glück (50%)') };
+      } else { // 'once'
+        myCardKept = useOnce(state.abilityUses, myCard.id + '_keep');
+      }
+      if (myCardKept && kc !== 'chance50') _keepMsg = { side: 'me', text: kcMe.msg };
+    }
+
     if (outcome === 'me') {
       state.myDeck.push(myCard, oppCard, ...state.pot);
       state.pot = [];
       state.turn = 'me';
     } else if (outcome === 'opp') {
-      state.oppDeck.push(oppCard, myCard, ...state.pot);
+      state.oppDeck.push(oppCard, ...state.pot);
+      if (myCardKept) state.myDeck.push(myCard);
+      else state.oppDeck.push(myCard);
       state.pot = [];
       state.turn = 'opp';
     } else {

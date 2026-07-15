@@ -295,6 +295,12 @@ body.theme-wesen {
 .wk-stats .stat-bar-wrap { background: rgba(255,255,255,0.08); }
 .wk-stats .stat-row.clickable:hover { background: rgba(212,175,55,0.12); border-color: rgba(212,175,55,0.35); }
 
+/* ============ ABILITY NOTIFICATIONS ============ */
+.abil-notifs { display: flex; flex-direction: column; gap: 4px; margin-top: 7px; }
+.abil-notif { display: block; font-size: 11.5px; padding: 4px 8px; border-radius: 5px; line-height: 1.35; font-style: italic; }
+.abil-notif.abil-me  { background: rgba(74,201,107,0.18); border-left: 3px solid #4ac96b; color: #d0f0da; }
+.abil-notif.abil-opp { background: rgba(230,80,80,0.18);  border-left: 3px solid #e65050; color: #f0d0d0; }
+
 .thinking { display: inline-block; animation: blink 1s ease infinite; }
 @keyframes blink { 0%,100% { opacity: 0.35; } 50% { opacity: 1; } }
 

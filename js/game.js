@@ -26,6 +26,48 @@
   function useOnce(uses,key){ if(uses[key])return false; uses[key]=true; return true; }
   let _keepMsg = null; // set by distribute(), read by resolveRoundCpu()
 
+  const WESEN_DESC = {
+    'Schwarm':'Gegner-Kraft < 6: eigene Kraft +2','Wächter':'Gegner-Seltenheit < 6: Seltenheit +2',
+    'Zaubererloyal':'Mehr Karten als Gegner: Kraft +2','Giftbiss':'Bei Bedrohung: Gegner-Kraft -1',
+    'Boteninstinkt':'Bei Seltenheit: Seltenheit +2','Tanz der Feen':'Mehr Karten: Bedrohung +2',
+    'Freier Flug':'Bei Bedrohung: Bedrohung +2','Tarnfarbe':'Seltenheit immer +2',
+    'Feuerfest':'Gegen Drachen: Magie +2','Licht':'Gegen Geister: Gegner-Magie -2',
+    'Magiepanzer':'Bei Magie: Gegner-Magie -2','Fluchtinstinkt':'Gewinnt Bedrohungs-Unentschieden',
+    'Muggelradar':'Bei Seltenheit: Seltenheit +3','Meeresherrscher':'Gegner-Seltenheit < 8: Kraft & Magie +1',
+    'Tödlicher Stachel':'Gewinnt Kraft-Unentschieden','Vollmondtanz':'Bei Seltenheit: Seltenheit +2',
+    'Blitzangriff':'Bei Bedrohung: alle Werte +1','Fünf Beine':'Bedrohung immer +2',
+    'Heiliger Käfer':'Seltenheit immer +2','Schwarmangriff':'Gegner-Kraft > 7: Kraft +3',
+    'Meerestiefe':'Gegner-Seltenheit < 6: Bedrohung +2','Nur für Eingeweihte':'Bei Seltenheit: Seltenheit +3',
+    'Silberpanzer':'Bei Magie: Gegner-Magie -2','Tarnung':'Deine Werte beim eigenen Zug verborgen',
+    'Opalblick':'Eigener Zug: Gegner-Bedrohung → max. 4','Keulenhieb':'Kraft (eig. Zug): Kraft +3',
+    'Levitation':'Eigener Zug: Gegner-Bedrohung → 1','Desorientierung':'Gegner wählt nächste Runde zufällig',
+    'Feuerball':'Magie (eig. Zug): Magie +3','Blutsauger':'Eigener Zug: stiehlt 2 Punkte der gewählten Kat.',
+    'Unsichtbarkeit':'Deine Werte beim eigenen Zug verborgen','Sturm':'Eigener Zug: alle Gegner-Werte -1',
+    'Meeresherr':'Kraft/Magie (eig. Zug): +2','Einfrieren':'Eigener Zug: Gegner-Bedrohung → max. 2',
+    'Pfeifenzauber':'Magie (eig. Zug): Gegner-Magie -2','Feueratem':'Magie (eig. Zug): Magie +3 – einmalig',
+    'Wahnsinnslied':'Gegner wählt zufällige Kategorie','Gartenwüter':'Seltenheit ↔ beste andere Kat.',
+    'Melancholie':'Eigener Zug: Gegner-Magie -2','Reißen':'Bedrohung (eig. Zug): Gegner-Bedrohung -2',
+    'Adlerstolz':'Kraft (Gegnerzug): eigene Kraft +2','Verschwinden lassen':'Eigener Zug: Gegner-Wert → 1',
+    'Dunkelmantel':'Kraft/Bedrohung (eig. Zug): Unentschieden → Sieg',
+    'Scheingold':'Eigener Zug: Seltenheit mit Gegner tauschen','Giftschleuder':'Eigener Zug: Gegner-Kraft -2',
+    'Schatzsuche':'Eigener Zug: Seltenheit += Gegner-Seltenheit/2','Stachelschutz':'Kraft (eig. Zug): Gegner-Kraft -2',
+    'Wolfsverwandlung':'Eigener Zug: Kraft ↔ Bedrohung','Stärkeblut':'Kraft (eig. Zug): Kraft +3 – einmalig',
+    'Blaue Flammen':'Magie (eig. Zug): Magie +3','Giftpfeil':'Eigener Zug: Gegner-Wert -3',
+    'Höllenflammen':'Kraft/Magie (eig. Zug): +3','Unsichtbares Wesen':'Deine Werte beim eigenen Zug verborgen',
+    'Keulenwirbel':'Kraft (eig. Zug): Kraft +2','Hornaufspießen':'Kraft (eig. Zug): Kraft +2, Gegner -1',
+    'Vollmondwut':'Kraft/Bedrohung (eig. Zug): +3','Explosion':'Kraft (eig. Zug): Kraft +2',
+    'Kreischen':'Eigener Zug: Gegner-Bedrohung -2','Regenruf':'Magie (Gegnerzug): Gegner-Magie -2',
+    'Feuerhintern':'Kraft (Gegnerzug): Gegner-Kraft -2','Todesomen':'Seltenheit (Gegnerzug): Gegner-Seltenheit -3',
+    'Anker':'Bedrohung (Gegnerzug): Gegner-Bedrohung → 1','Kammangriff':'Kraft (Gegnerzug): eigene Kraft +2',
+    'Seegeheimnis':'Seltenheit (Gegnerzug): eigene Seltenheit +3',
+    'Klebeschleim':'Bedrohung (Gegnerzug): Gegner-Bedrohung -3',
+    'Schneesturm':'Bei Kraft/Bedrohung: Gegner-Bedrohung -2',
+    'Teleport':'Bei Niederlage: Karte einmalig behalten','Energiesog':'Bei Niederlage: Karte immer behalten',
+    'Schrumpfen':'Bei Niederlage: Karte einmalig behalten',
+    'Unzerstörbar':'Bei Niederlage: 50% Chance, Karte zu behalten',
+    'Tödlicher Blick':'Automatischer Sieg beim eigenen Zug – einmalig',
+  };
+
   const WESEN_AB = {
     // ── PASSIV ──
     'Schwarm':           c => c.oppV[0]<6 ? {myV:addV(c.myV,0,2),msg:'Schwarm: Kraft +2'} : null,
@@ -230,7 +272,6 @@
       '<div class="tcard" style="border:3px solid ' + accent + '">' +
       '<div class="tc-head" style="background:linear-gradient(90deg,#0f2657,#24457e)">' +
       '<span class="tc-head-brand">Tauben-Quartett</span>' +
-      '<span class="tc-id">' + esc(card.id) + '</span>' +
       '</div>' +
       '<div class="tc-art" style="background:linear-gradient(160deg,' + light + ' 0%,' + mid + ' 100%)">' +
       '<div class="bub1"></div><div class="bub2"></div>' +
@@ -254,7 +295,7 @@
     return (
       '<div class="tcard hp-card">' +
       '<div class="hp-head" style="background:' + card.houseColor + '">' +
-      '<span class="hp-num">' + esc(card.id.replace('HP', '')) + '</span><span class="haus">' + esc(card.haus) + '</span>' +
+      '<span class="hp-num">' + esc(card.id.replace('HP', '')) + '</span>' +
       '</div>' +
       '<div class="hp-art-wrap"><div class="hp-art">' +
       (card.img ? '<img src="' + card.img + '" alt="' + esc(card.name) + '">' : '') +
@@ -284,14 +325,29 @@
 
   function renderWesenCard(q, card, opts) {
     const kc = card.katColor;
-    const imgHtml = card.img
-      ? '<div class="wk-img-wrap"><img class="wk-full-img" src="' + card.img + '" alt="' + esc(card.name) + '"></div>'
-      : '<div class="wk-no-img">#' + esc(card.id.replace('W', '')) + ' ' + esc(card.name) + '</div>';
+    const num = card.id.replace('W', '');
+    const typMap = { 'Passiv': 'passiv', 'Aktiv': 'aktiv', 'Reaktiv': 'reaktiv' };
+    const typCls = 'wk-abil-type wk-abil-' + (typMap[card.typ] || 'passiv');
+    const desc = WESEN_DESC[card.faehigkeit] || '';
+    const artHtml = card.img
+      ? '<div class="wk-art-wrap"><img class="wk-art-img" src="' + card.img + '" alt="' + esc(card.name) + '"></div>'
+      : '<div class="wk-no-img">' + esc(card.name) + '</div>';
     return (
       '<div class="tcard wesen-card">' +
-      imgHtml +
+      '<div class="wk-hdr">' +
+        '<div class="wk-hdr-left"><span class="wk-num">' + num + '</span><span class="wk-name">' + esc(card.name) + '</span></div>' +
+        '<span class="wk-kat" style="background:' + kc + '">' + esc(card.kat) + '</span>' +
+      '</div>' +
+      artHtml +
       '<div class="wk-stats">' +
       statRows(q, card, Object.assign({ barColor: kc, cats: [0, 1, 2, 3] }, opts)) +
+      '</div>' +
+      '<div class="wk-ability">' +
+        '<div class="wk-abil-row">' +
+          '<span class="' + typCls + '">' + esc(card.typEmoji) + ' ' + esc(card.typ) + '</span>' +
+          '<span class="wk-abil-name">' + esc(card.faehigkeit) + '</span>' +
+        '</div>' +
+        (desc ? '<p class="wk-abil-desc">' + esc(desc) + '</p>' : '') +
       '</div>' +
       '</div>'
     );

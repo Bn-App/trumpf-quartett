@@ -202,7 +202,9 @@
 
   // ---------- Card rendering ----------
   function statRows(q, card, opts) {
-    return q.categories.map((cat, i) => {
+    const indices = opts.cats ? opts.cats : q.categories.map((_, i) => i);
+    return indices.map(i => {
+      const cat = q.categories[i];
       const v = card.values[i];
       const pct = Math.round((v / cat.max) * 100);
       const cls = ['stat-row'];
@@ -282,13 +284,14 @@
 
   function renderWesenCard(q, card, opts) {
     const kc = card.katColor;
+    const imgHtml = card.img
+      ? '<div class="wk-img-wrap"><img class="wk-full-img" src="' + card.img + '" alt="' + esc(card.name) + '"></div>'
+      : '<div class="wk-no-img">#' + esc(card.id.replace('W', '')) + ' ' + esc(card.name) + '</div>';
     return (
       '<div class="tcard wesen-card">' +
-      (card.img
-        ? '<img class="wk-full-img" src="' + card.img + '" alt="' + esc(card.name) + '">'
-        : '<div class="wk-no-img">#' + esc(card.id.replace('W', '')) + ' ' + esc(card.name) + '</div>') +
+      imgHtml +
       '<div class="wk-stats">' +
-      statRows(q, card, Object.assign({ barColor: kc }, opts)) +
+      statRows(q, card, Object.assign({ barColor: kc, cats: [0, 1, 2, 3] }, opts)) +
       '</div>' +
       '</div>'
     );

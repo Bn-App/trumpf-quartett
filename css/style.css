@@ -286,14 +286,35 @@ body.theme-wesen {
 .card-back img { width: 100%; height: 100%; object-fit: cover; display: block; }
 
 /* ============ WESEN CARD ============ */
-.wesen-card { background: #0d0824; color: #f0e6c8; }
-.wk-full-img { width: 100%; display: block; border-radius: 8px 8px 0 0; }
-.wk-no-img { height: 200px; display: flex; align-items: center; justify-content: center; color: rgba(212,175,55,0.6); font-size: 13px; background: #0d0824; }
-.wk-stats { padding: 4px 9px 6px; display: flex; flex-direction: column; gap: 2px; background: rgba(0,0,0,0.5); border-top: 1px solid rgba(212,175,55,0.25); }
-.wk-stats .stat-label { color: rgba(212,175,55,0.75); font-family: 'Cinzel', serif; font-size: 9px; letter-spacing: 0.3px; }
-.wk-stats .stat-num { color: #f0e6c8; }
-.wk-stats .stat-bar-wrap { background: rgba(255,255,255,0.08); }
-.wk-stats .stat-row.clickable:hover { background: rgba(212,175,55,0.12); border-color: rgba(212,175,55,0.35); }
+.wesen-card { background: #0d0824; color: #f0e6c8; width: 300px; }
+.wk-img-wrap {
+  width: 100%; overflow: hidden; border-radius: 8px 8px 0 0;
+  display: flex; align-items: center; justify-content: center;
+  background: #0d0824;
+}
+.wk-full-img { width: 100%; height: auto; display: block; }
+.wk-no-img { height: 220px; display: flex; align-items: center; justify-content: center; color: rgba(212,175,55,0.6); font-size: 13px; background: #0d0824; }
+.wk-stats {
+  padding: 0; display: flex; flex-direction: column; gap: 0;
+  background: rgba(0,0,0,0.6); border-top: 2px solid rgba(212,175,55,0.35);
+}
+.wk-stats .stat-row {
+  padding: 8px 14px; border-radius: 0; border: none;
+  border-bottom: 1px solid rgba(212,175,55,0.12);
+}
+.wk-stats .stat-row:last-child { border-bottom: none; }
+.wk-stats .stat-row.clickable { border-left: 3px solid transparent; }
+.wk-stats .stat-row.clickable:hover {
+  background: rgba(212,175,55,0.14); border-left-color: rgba(212,175,55,0.7);
+  transform: none;
+}
+.wk-stats .stat-label { color: rgba(212,175,55,0.8); font-family: 'Cinzel', serif; font-size: 10px; letter-spacing: 0.4px; }
+.wk-stats .stat-num { color: #f0e6c8; font-size: 18px; }
+.wk-stats .stat-emoji { font-size: 17px; width: 26px; }
+.wk-stats .stat-bar-wrap { width: 60px; height: 8px; background: rgba(255,255,255,0.1); }
+.wk-stats .stat-row.won-row  { background: rgba(74,158,106,0.25) !important; border-left: 3px solid #4a9e6a !important; }
+.wk-stats .stat-row.lost-row { background: rgba(200,106,106,0.2) !important; border-left: 3px solid #c86a6a !important; }
+.wk-stats .stat-row.chosen   { background: rgba(212,175,55,0.18) !important; border-left: 3px solid rgba(212,175,55,0.8) !important; }
 
 /* ============ ABILITY NOTIFICATIONS ============ */
 .abil-notifs { display: flex; flex-direction: column; gap: 4px; margin-top: 7px; }
@@ -370,6 +391,7 @@ body.theme-wesen {
   .btn-next { padding: 10px 24px; font-size: 14px; }
 
   .tcard, .card-back { width: 218px; }
+  .wesen-card { width: 250px; }
   .card-back { height: 180px; }
   .hp-art { height: 140px; }
   .tc-art { height: 130px; }

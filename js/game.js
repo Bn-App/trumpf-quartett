@@ -131,12 +131,8 @@
 
   function renderBack() {
     const isHp = state.quartett.id === 'hp';
-    return (
-      '<div class="card-back ' + (isHp ? 'back-hp' : 'back-tauben') + '">' +
-      '<div class="back-emblem">' + (isHp ? '🪄' : '🕊️') + '</div>' +
-      '<div class="back-text">' + (isHp ? 'Harry Potter<br>Quartett' : 'Tauben-<br>Quartett') + '</div>' +
-      '</div>'
-    );
+    const src = isHp ? 'img/backs/back-hp.jpg' : 'img/backs/back-tauben.jpg';
+    return '<div class="card-back"><img src="' + src + '" alt="Kartenrücken"></div>';
   }
 
   // ---------- Shared UI ----------

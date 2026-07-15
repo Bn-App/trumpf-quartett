@@ -126,12 +126,43 @@
   function renderCard(card, opts) {
     opts = opts || {};
     const q = state.quartett;
-    return q.id === 'hp' ? renderHpCard(q, card, opts) : renderTaubenCard(q, card, opts);
+    if (q.id === 'hp')    return renderHpCard(q, card, opts);
+    if (q.id === 'wesen') return renderWesenCard(q, card, opts);
+    return renderTaubenCard(q, card, opts);
+  }
+
+  function renderWesenCard(q, card, opts) {
+    const total = card.values.reduce((a, b) => a + b, 0);
+    const kc = card.katColor;
+    return (
+      '<div class="tcard wesen-card">' +
+      '<div class="wk-head" style="background:linear-gradient(90deg,' + kc + '30,transparent)">' +
+      '<span class="wk-nr">#' + esc(card.id.replace('W', '')) + '</span>' +
+      '<span class="wk-typ-badge">' + card.typEmoji + ' ' + esc(card.typ) + '</span>' +
+      '</div>' +
+      '<div class="wk-art-wrap"><div class="wk-art" style="border-color:' + kc + '40">' +
+      (card.img ? '<img src="' + card.img + '" alt="' + esc(card.name) + '">' : '') +
+      '</div></div>' +
+      '<div class="wk-name-row" style="border-bottom:1px solid ' + kc + '35">' +
+      '<div class="wk-name">' + esc(card.name) + '</div>' +
+      '<div class="wk-kat-sub" style="color:' + kc + '">' + esc(card.kat) + '</div>' +
+      '</div>' +
+      '<div class="wk-stats">' +
+      statRows(q, card, Object.assign({ barColor: kc }, opts)) +
+      '</div>' +
+      '<div class="wk-footer" style="background:' + kc + '18;border-top:1px solid ' + kc + '30">' +
+      '<span class="lbl">' + card.typEmoji + ' ' + esc(card.faehigkeit) + '</span>' +
+      '<span class="tot">' + total + '</span>' +
+      '</div>' +
+      '</div>'
+    );
   }
 
   function renderBack() {
-    const isHp = state.quartett.id === 'hp';
-    const src = isHp ? 'img/backs/back-hp.jpg' : 'img/backs/back-tauben.jpg';
+    const id = state.quartett.id;
+    const src = id === 'hp' ? 'img/backs/back-hp.jpg'
+              : id === 'wesen' ? 'img/backs/back-wesen.svg'
+              : 'img/backs/back-tauben.jpg';
     return '<div class="card-back"><img src="' + src + '" alt="Kartenrücken"></div>';
   }
 
@@ -188,7 +219,8 @@
     state.quartett = window.QUARTETTS[id];
     state.cardById = {};
     state.quartett.cards.forEach((c) => { state.cardById[c.id] = c; });
-    document.body.classList.toggle('theme-hp', id === 'hp');
+    document.body.classList.toggle('theme-hp',    id === 'hp');
+    document.body.classList.toggle('theme-wesen', id === 'wesen');
     $('#game-title').textContent = state.quartett.name;
   }
 

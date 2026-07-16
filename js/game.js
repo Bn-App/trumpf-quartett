@@ -407,8 +407,8 @@
     const typKey = typMap[card.typ] || 'passiv';
     const desc = WESEN_DESC[card.faehigkeit] || '';
     const artHtml = card.img
-      ? '<div class="wk-art-wrap"><img class="wk-art-img" src="' + card.img + '" alt="' + esc(card.name) + '"></div>'
-      : '<div class="wk-no-img">' + esc(card.name) + '</div>';
+      ? '<div class="wk-art-wrap" style="background-image:url(\'' + card.img + '\')"></div>'
+      : '<div class="wk-art-wrap wk-no-img">' + esc(card.name) + '</div>';
     return (
       '<div class="tcard wesen-card">' +
       '<div class="wk-hdr">' +

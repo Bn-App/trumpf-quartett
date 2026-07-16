@@ -318,12 +318,15 @@ body.theme-wesen {
 .wk-hdr-spacer { flex-shrink: 0; width: 30px; }
 
 /* artwork */
-.wk-art-wrap { width: 100%; overflow: hidden; background: #000; }
-.wk-art-img {
-  width: 100%; height: 248px; display: block;
-  object-fit: cover; object-position: 50% 18%;
+.wk-art-wrap {
+  width: 100%; height: 215px;
+  background: #000 no-repeat 50% 11% / 88% auto;
 }
-.wk-no-img { height: 200px; display: flex; align-items: center; justify-content: center; color: rgba(200,168,32,0.4); font-size: 13px; }
+.wk-art-wrap.wk-no-img {
+  display: flex; align-items: center; justify-content: center;
+  color: rgba(200,168,32,0.4); font-size: 13px;
+  background-image: none;
+}
 
 /* 4-column stat grid */
 .wk-stats-grid {
@@ -481,7 +484,7 @@ body.theme-wesen {
 
   .tcard, .card-back { width: 218px; }
   .wesen-card { width: 265px; }
-  .wk-art-img { height: 200px; }
+  .wk-art-wrap { height: 185px; }
   .wk-snum { font-size: 24px; }
   .card-back { height: 180px; }
   .hp-art { height: 140px; }

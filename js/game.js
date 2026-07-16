@@ -27,45 +27,103 @@
   let _keepMsg = null; // set by distribute(), read by resolveRoundCpu()
 
   const WESEN_DESC = {
-    'Schwarm':'Gegner-Kraft < 6: eigene Kraft +2','Wächter':'Gegner-Seltenheit < 6: Seltenheit +2',
-    'Zaubererloyal':'Mehr Karten als Gegner: Kraft +2','Giftbiss':'Bei Bedrohung: Gegner-Kraft -1',
-    'Boteninstinkt':'Bei Seltenheit: Seltenheit +2','Tanz der Feen':'Mehr Karten: Bedrohung +2',
-    'Freier Flug':'Bei Bedrohung: Bedrohung +2','Tarnfarbe':'Seltenheit immer +2',
-    'Feuerfest':'Gegen Drachen: Magie +2','Licht':'Gegen Geister: Gegner-Magie -2',
-    'Magiepanzer':'Bei Magie: Gegner-Magie -2','Fluchtinstinkt':'Gewinnt Bedrohungs-Unentschieden',
-    'Muggelradar':'Bei Seltenheit: Seltenheit +3','Meeresherrscher':'Gegner-Seltenheit < 8: Kraft & Magie +1',
-    'Tödlicher Stachel':'Gewinnt Kraft-Unentschieden','Vollmondtanz':'Bei Seltenheit: Seltenheit +2',
-    'Blitzangriff':'Bei Bedrohung: alle Werte +1','Fünf Beine':'Bedrohung immer +2',
-    'Heiliger Käfer':'Seltenheit immer +2','Schwarmangriff':'Gegner-Kraft > 7: Kraft +3',
-    'Meerestiefe':'Gegner-Seltenheit < 6: Bedrohung +2','Nur für Eingeweihte':'Bei Seltenheit: Seltenheit +3',
-    'Silberpanzer':'Bei Magie: Gegner-Magie -2','Tarnung':'Deine Werte beim eigenen Zug verborgen',
-    'Opalblick':'Eigener Zug: Gegner-Bedrohung → max. 4','Keulenhieb':'Kraft (eig. Zug): Kraft +3',
-    'Levitation':'Eigener Zug: Gegner-Bedrohung → 1','Desorientierung':'Gegner wählt nächste Runde zufällig',
-    'Feuerball':'Magie (eig. Zug): Magie +3','Blutsauger':'Eigener Zug: stiehlt 2 Punkte der gewählten Kat.',
-    'Unsichtbarkeit':'Deine Werte beim eigenen Zug verborgen','Sturm':'Eigener Zug: alle Gegner-Werte -1',
-    'Meeresherr':'Kraft/Magie (eig. Zug): +2','Einfrieren':'Eigener Zug: Gegner-Bedrohung → max. 2',
-    'Pfeifenzauber':'Magie (eig. Zug): Gegner-Magie -2','Feueratem':'Magie (eig. Zug): Magie +3 – einmalig',
-    'Wahnsinnslied':'Gegner wählt zufällige Kategorie','Gartenwüter':'Seltenheit ↔ beste andere Kat.',
-    'Melancholie':'Eigener Zug: Gegner-Magie -2','Reißen':'Bedrohung (eig. Zug): Gegner-Bedrohung -2',
-    'Adlerstolz':'Kraft (Gegnerzug): eigene Kraft +2','Verschwinden lassen':'Eigener Zug: Gegner-Wert → 1',
-    'Dunkelmantel':'Kraft/Bedrohung (eig. Zug): Unentschieden → Sieg',
-    'Scheingold':'Eigener Zug: Seltenheit mit Gegner tauschen','Giftschleuder':'Eigener Zug: Gegner-Kraft -2',
-    'Schatzsuche':'Eigener Zug: Seltenheit += Gegner-Seltenheit/2','Stachelschutz':'Kraft (eig. Zug): Gegner-Kraft -2',
-    'Wolfsverwandlung':'Eigener Zug: Kraft ↔ Bedrohung','Stärkeblut':'Kraft (eig. Zug): Kraft +3 – einmalig',
-    'Blaue Flammen':'Magie (eig. Zug): Magie +3','Giftpfeil':'Eigener Zug: Gegner-Wert -3',
-    'Höllenflammen':'Kraft/Magie (eig. Zug): +3','Unsichtbares Wesen':'Deine Werte beim eigenen Zug verborgen',
-    'Keulenwirbel':'Kraft (eig. Zug): Kraft +2','Hornaufspießen':'Kraft (eig. Zug): Kraft +2, Gegner -1',
-    'Vollmondwut':'Kraft/Bedrohung (eig. Zug): +3','Explosion':'Kraft (eig. Zug): Kraft +2',
-    'Kreischen':'Eigener Zug: Gegner-Bedrohung -2','Regenruf':'Magie (Gegnerzug): Gegner-Magie -2',
-    'Feuerhintern':'Kraft (Gegnerzug): Gegner-Kraft -2','Todesomen':'Seltenheit (Gegnerzug): Gegner-Seltenheit -3',
-    'Anker':'Bedrohung (Gegnerzug): Gegner-Bedrohung → 1','Kammangriff':'Kraft (Gegnerzug): eigene Kraft +2',
-    'Seegeheimnis':'Seltenheit (Gegnerzug): eigene Seltenheit +3',
-    'Klebeschleim':'Bedrohung (Gegnerzug): Gegner-Bedrohung -3',
-    'Schneesturm':'Bei Kraft/Bedrohung: Gegner-Bedrohung -2',
-    'Teleport':'Bei Niederlage: Karte einmalig behalten','Energiesog':'Bei Niederlage: Karte immer behalten',
-    'Schrumpfen':'Bei Niederlage: Karte einmalig behalten',
-    'Unzerstörbar':'Bei Niederlage: 50% Chance, Karte zu behalten',
-    'Tödlicher Blick':'Automatischer Sieg beim eigenen Zug – einmalig',
+    // ── PASSIV ──
+    'Schwarm':'Kraft +2 wenn Gegner-Kraft unter 6 liegt',
+    'Wächter':'Seltenheit +2 wenn Gegner-Seltenheit unter 6 liegt',
+    'Zaubererloyal':'Kraft +2 wenn eigene Hand mehr Karten hat als die des Gegners',
+    'Giftbiss':'Wenn Bedrohung verglichen und diese Karte gewinnt: Gegner-Kraft -1',
+    'Boteninstinkt':'Wenn Seltenheit ansagt: Seltenheit +2',
+    'Tanz der Feen':'Bedrohung +2 wenn eigene Hand mehr Karten hat als die des Gegners',
+    'Freier Flug':'Bedrohung +2 wenn Bedrohung gewählt wird',
+    'Tarnfarbe':'Seltenheit +2 bei allen Vergleichen',
+    'Feuerfest':'Magie +2 gegen alle Drachen-Karten',
+    'Licht':'Geist-Karten verlieren 2 Magie gegen diese Karte',
+    'Magiepanzer':'Gegner-Magie -2 wenn Magie verglichen wird',
+    'Fluchtinstinkt':'Gewinnt Unentschieden bei Bedrohung',
+    'Muggelradar':'Seltenheit +3 wenn Seltenheit verglichen',
+    'Meeresherrscher':'Kraft und Magie +1 wenn Gegner-Seltenheit unter 8 liegt',
+    'Tödlicher Stachel':'Gewinnt Kraft-Vergleiche bei Gleichstand automatisch',
+    'Vollmondtanz':'Seltenheit +2 wenn Seltenheit gewählt wird',
+    'Blitzangriff':'Alle eigenen Werte +1 wenn Bedrohung verglichen wird',
+    'Fünf Beine':'Bedrohung immer +2',
+    'Heiliger Käfer':'Seltenheit +2 bei allen Vergleichen',
+    'Schwarmangriff':'Kraft +3 wenn Gegner-Kraft über 7 liegt',
+    'Meerestiefe':'Bedrohung +2 wenn Gegner-Seltenheit unter 6 liegt',
+    'Nur für Eingeweihte':'Seltenheit +3 wenn Seltenheit gewählt wird',
+    'Silberpanzer':'Gegner-Magie -2 wenn Magie verglichen wird',
+    'Tarnung':'Verberge alle deine Werte bis der Gegner seinen Wert gewählt hat',
+    'Dreifachnatur':'Wähle deinen Vergleichswert NACH dem Ansagen des Gegners',
+    'Ätzschleim':'Wenn Bundimun gewinnt: Gegner-Kraft -1 (max. 3× pro Spiel)',
+    'Wundheilung':'Wenn du verlierst: Gegner erhält nur 1 Punkt Vorteil statt der vollen Runde',
+    'Giftspur':'Wenn Streeler verliert: Gegner-Kraft -1 (max. 3× pro Spiel)',
+    'Schlafsog':'Wenn Bedrohung verglichen und gewonnen: Gegner-Bedrohung -1 (max. 3× pro Spiel)',
+    'Totales Chaos':'Beide Spieler wählen Kategorie blind wenn Wichtel gespielt wird',
+    'Weisheit der Sterne':'Einmal pro Spiel: sieh die 3 nächsten Karten des Gegner-Stapels',
+    // ── AKTIV ──
+    'Opalblick':'Setze Gegner-Bedrohung auf 4 für diese Runde',
+    'Keulenhieb':'Kraft +3 wenn Kraft gewählt wird',
+    'Levitation':'Setze Gegner-Bedrohung auf 1 für diese Runde',
+    'Desorientierung':'Gegner muss eine andere als die gewählte Kategorie nehmen',
+    'Feuerball':'Wenn Magie gewählt: Magie +3 für diese Runde',
+    'Blutsauger':'Stehle 2 Punkte vom gewählten Wert des Gegners für diese Runde',
+    'Unsichtbarkeit':'Verberge alle deine Werte bis der Gegner seinen Wert aufgedeckt hat',
+    'Sturm':'Alle Werte des Gegners -1 für diese Runde',
+    'Meeresherr':'Wenn Magie oder Kraft gewählt: +2 auf gewählten Wert',
+    'Einfrieren':'Setze Gegner-Bedrohung auf 2 für diese Runde',
+    'Pfeifenzauber':'Wenn Magie gewählt: Gegner-Magie -2',
+    'Feueratem':'Wenn Magie verglichen: Magie +3 – einmal pro Spiel',
+    'Wahnsinnslied':'Gegner muss eine zufällige Kategorie wählen',
+    'Gartenwüter':'Tausche Seltenheit mit dem höchsten anderen eigenen Wert',
+    'Melancholie':'Gegner-Magie -2 für diese Runde',
+    'Reißen':'Gegner-Bedrohung -2 wenn Bedrohung gewählt wird',
+    'Verschwinden lassen':'Setze gewählten Gegner-Wert auf 1 für diese Runde',
+    'Dunkelmantel':'Gewinne Gleichstände bei Kraft und Bedrohung automatisch',
+    'Scheingold':'Tausche Seltenheitswerte mit dem Gegner für diese Runde',
+    'Giftschleuder':'Gegner-Kraft -2 wenn eigener Zug',
+    'Schatzsuche':'Erhöhe deine Seltenheit um die Hälfte der gegnerischen Seltenheit',
+    'Stachelschutz':'Gegner-Kraft -2 wenn Kraft gewählt wird',
+    'Wolfsverwandlung':'Tausche Kraft und Bedrohung für diese Runde',
+    'Stärkeblut':'Kraft +3 wenn Kraft gewählt wird – einmalig pro Spiel',
+    'Blaue Flammen':'Magie +3 wenn Magie gewählt wird',
+    'Giftpfeil':'Gewählter Gegner-Wert -3 für diese Runde',
+    'Höllenflammen':'Kraft und Magie +3 wenn eigener Zug',
+    'Unsichtbares Wesen':'Alle eigenen Werte verborgen wenn eigener Zug',
+    'Keulenwirbel':'Kraft +2 wenn Kraft gewählt wird',
+    'Hornaufspießen':'Kraft +2 und Gegner-Kraft -1 wenn Kraft gewählt wird',
+    'Vollmondwut':'Wenn Kraft oder Bedrohung gewählt: +3 auf gewählten Wert',
+    'Explosion':'Wenn Kraft gewählt und gewonnen: Kraft +2 in der nächsten Runde',
+    'Kreischen':'Gegner-Bedrohung -2 wenn eigener Zug',
+    'Gedankenlesen':'Sieh alle Werte der nächsten Gegnerkarte bevor Kategorie angesagt wird',
+    'Rätsel':'Wenn Gegner Fähigkeit nutzt: neutralisiere sie und alle eigene Werte +1',
+    'Pechbiss':'Gegner-Seltenheit -3 für die nächste Runde',
+    // ── REAKTIV ──
+    'Regenruf':'Wenn Gegner Magie ansagt: Gegner-Magie -2',
+    'Feuerhintern':'Wenn Gegner Kraft ansagt: Gegner-Kraft -2',
+    'Todesomen':'Gegner-Seltenheit -3 wenn Gegner Seltenheit ansagt',
+    'Anker':'Setze Gegner-Bedrohung auf 1 wenn Gegner am Zug ist',
+    'Kammangriff':'Kraft +2 wenn Gegner am Zug ist',
+    'Seegeheimnis':'Seltenheit +3 wenn Gegner am Zug ist',
+    'Klebeschleim':'Gegner-Bedrohung -3 wenn Gegner Bedrohung ansagt',
+    'Schneesturm':'Wenn Kraft oder Bedrohung verglichen: Gegner-Bedrohung -2',
+    'Adlerstolz':'Kraft +2 wenn Gegner am Zug ist',
+    'Lärmer':'Wenn Gegner eine Fähigkeit aktiviert: Gegner verliert 1 Punkt auf gewähltem Wert',
+    'Misstrauen':'Wenn Gegner eine Fähigkeit einsetzt: negiere sie – einmal pro Spiel',
+    'Tentakel':'Wenn Gegner Kraft ansagt: Gegner kann keine Fähigkeit aktivieren',
+    'Blutmütze':'Wenn Gegner gewinnt: Gegner-Kraft -1 (max. 3× pro Spiel)',
+    'Kleptomanie':'Wenn Gegner Seltenheit wählt: stehle 1 Seltenheit dauerhaft (max. 3× pro Spiel)',
+    'Reinheit':'Wenn Gegner eine Aktiv-Fähigkeit einsetzt: immunisiere diese Karte dagegen',
+    'Augenkratzer':'Wenn Gegner eine Aktiv-Fähigkeit einsetzt: blockiere sie',
+    'Federstab-Schwäche':'Wenn Gegner eine Aktiv-Fähigkeit nutzt: alle eigene Werte +3 für diese Runde',
+    'Beschwörung':'Wenn Gegner gewinnt: alle eigenen Werte +2 in der nächsten Runde',
+    // ── BEI VERLUST ──
+    'Teleport':'Wenn du verlierst: behalte diese Karte – einmal pro Spiel',
+    'Energiesog':'Wenn du verlierst: behalte diese Karte und spiele sie erneut',
+    'Schrumpfen':'Wenn du verlierst: behalte diese Karte – einmal pro Spiel',
+    'Unzerstörbar':'Wenn du verlierst: 50% Chance diese Karte zu behalten',
+    // ── AUTO-WIN ──
+    'Tödlicher Blick':'Gewinne diesen Vergleich automatisch – einmal pro Spiel',
+    // ── NICHT IMPLEMENTIERT ──
+    'Drei Köpfe':'Jeder Kopf kämpft unabhängig voneinander',
   };
 
   const WESEN_AB = {
@@ -323,11 +381,30 @@
     return renderTaubenCard(q, card, opts);
   }
 
+  function wesenStatGrid(q, card, opts) {
+    const o = opts || {};
+    return [0, 1, 2, 3].map(function(i) {
+      const cat = q.categories[i];
+      const v = card.values[i];
+      const isAlt = (i === 1 || i === 3);
+      const cls = ['stat-row', 'wk-sbox'];
+      if (isAlt) cls.push('wk-sbox-alt');
+      if (o.clickable) cls.push('clickable');
+      if (o.chosen === i) cls.push('chosen');
+      if (o.wonRow === i) cls.push('won-row');
+      if (o.lostRow === i) cls.push('lost-row');
+      return '<div class="' + cls.join(' ') + '" data-idx="' + i + '">' +
+        '<div class="wk-snum">' + v + '</div>' +
+        '<div class="wk-slbl">' + esc(cat.label) + '</div>' +
+        '</div>';
+    }).join('');
+  }
+
   function renderWesenCard(q, card, opts) {
     const kc = card.katColor;
     const num = card.id.replace('W', '');
     const typMap = { 'Passiv': 'passiv', 'Aktiv': 'aktiv', 'Reaktiv': 'reaktiv' };
-    const typCls = 'wk-abil-type wk-abil-' + (typMap[card.typ] || 'passiv');
+    const typKey = typMap[card.typ] || 'passiv';
     const desc = WESEN_DESC[card.faehigkeit] || '';
     const artHtml = card.img
       ? '<div class="wk-art-wrap"><img class="wk-art-img" src="' + card.img + '" alt="' + esc(card.name) + '"></div>'
@@ -335,19 +412,23 @@
     return (
       '<div class="tcard wesen-card">' +
       '<div class="wk-hdr">' +
-        '<div class="wk-hdr-left"><span class="wk-num">' + num + '</span><span class="wk-name">' + esc(card.name) + '</span></div>' +
-        '<span class="wk-kat" style="background:' + kc + '">' + esc(card.kat) + '</span>' +
+        '<span class="wk-num">#' + num + '</span>' +
+        '<div class="wk-hdr-center">' +
+          '<span class="wk-name">' + esc(card.name) + '</span>' +
+          '<span class="wk-kat" style="background:' + kc + '">' + esc(card.kat) + '</span>' +
+        '</div>' +
+        '<div class="wk-hdr-spacer"></div>' +
       '</div>' +
       artHtml +
-      '<div class="wk-stats">' +
-      statRows(q, card, Object.assign({ barColor: kc, cats: [0, 1, 2, 3] }, opts)) +
-      '</div>' +
-      '<div class="wk-ability">' +
-        '<div class="wk-abil-row">' +
-          '<span class="' + typCls + '">' + esc(card.typEmoji) + ' ' + esc(card.typ) + '</span>' +
-          '<span class="wk-abil-name">' + esc(card.faehigkeit) + '</span>' +
+      '<div class="wk-stats-grid">' + wesenStatGrid(q, card, opts) + '</div>' +
+      '<div class="wk-ability wk-abil-bg-' + typKey + '">' +
+        '<div class="wk-abil-inner">' +
+          '<div class="wk-abil-top">' +
+            '<span class="wk-abil-badge wk-badge-' + typKey + '">' + esc(card.typ.toUpperCase()) + '</span>' +
+            '<span class="wk-abil-name">' + esc(card.faehigkeit) + '</span>' +
+          '</div>' +
+          (desc ? '<p class="wk-abil-desc">' + esc(desc) + '</p>' : '') +
         '</div>' +
-        (desc ? '<p class="wk-abil-desc">' + esc(desc) + '</p>' : '') +
       '</div>' +
       '</div>'
     );

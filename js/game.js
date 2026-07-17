@@ -407,7 +407,7 @@
     const typKey = typMap[card.typ] || 'passiv';
     const desc = WESEN_DESC[card.faehigkeit] || '';
     const artHtml = card.img
-      ? '<div class="wk-art-wrap"><img class="wk-art-img" src="' + card.img + '" alt="' + esc(card.name) + '"></div>'
+      ? '<div class="wk-art-wrap"><img class="wk-art-img" src="' + encodeURI(card.img) + '" alt="' + esc(card.name) + '"></div>'
       : '<div class="wk-art-wrap wk-no-img">' + esc(card.name) + '</div>';
     return (
       '<div class="tcard wesen-card">' +
@@ -420,16 +420,6 @@
         '<div class="wk-hdr-spacer"></div>' +
       '</div>' +
       artHtml +
-      '<div class="wk-stats-grid">' + wesenStatGrid(q, card, opts) + '</div>' +
-      '<div class="wk-ability wk-abil-bg-' + typKey + '">' +
-        '<div class="wk-abil-inner">' +
-          '<div class="wk-abil-top">' +
-            '<span class="wk-abil-badge wk-badge-' + typKey + '">' + esc(card.typ.toUpperCase()) + '</span>' +
-            '<span class="wk-abil-name">' + esc(card.faehigkeit) + '</span>' +
-          '</div>' +
-          (desc ? '<p class="wk-abil-desc">' + esc(desc) + '</p>' : '') +
-        '</div>' +
-      '</div>' +
       '</div>'
     );
   }

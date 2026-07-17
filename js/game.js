@@ -354,6 +354,7 @@
       '<div class="tcard hp-card">' +
       '<div class="hp-head" style="background:' + card.houseColor + '">' +
       '<span class="hp-num">' + esc(card.id.replace('HP', '')) + '</span>' +
+      '<span class="haus">' + esc(card.zugehoerigkeit) + '</span>' +
       '</div>' +
       '<div class="hp-art-wrap"><div class="hp-art">' +
       (card.img ? '<img src="' + card.img + '" alt="' + esc(card.name) + '">' : '') +

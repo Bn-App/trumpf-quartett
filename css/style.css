@@ -204,7 +204,9 @@ body.theme-wesen {
 @keyframes pop { 0% { transform: scale(0.65); opacity: 0; } 65% { transform: scale(1.09); opacity: 1; } 100% { transform: scale(1); opacity: 1; } }
 
 /* ============ CARDS (generic) ============ */
-.card-holder { perspective: 1200px; }
+.card-holder { perspective: 1200px; display: flex; flex-direction: column; align-items: center; }
+
+.wk-below { width: 272px; }
 
 .tcard {
   width: 272px; border-radius: 20px; overflow: hidden;

@@ -420,6 +420,18 @@
         '<div class="wk-hdr-spacer"></div>' +
       '</div>' +
       artHtml +
+      '</div>' +
+      '<div class="wk-below">' +
+        '<div class="wk-stats-grid">' + wesenStatGrid(q, card, opts) + '</div>' +
+        '<div class="wk-ability wk-abil-bg-' + typKey + '">' +
+          '<div class="wk-abil-inner">' +
+            '<div class="wk-abil-top">' +
+              '<span class="wk-abil-badge wk-badge-' + typKey + '">' + esc(card.typ.toUpperCase()) + '</span>' +
+              '<span class="wk-abil-name">' + esc(card.faehigkeit) + '</span>' +
+            '</div>' +
+            (desc ? '<p class="wk-abil-desc">' + esc(desc) + '</p>' : '') +
+          '</div>' +
+        '</div>' +
       '</div>'
     );
   }
